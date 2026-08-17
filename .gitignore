@@ -1,0 +1,31 @@
+# Dependências
+node_modules/
+
+# Build do pacote (`pnpm build` → tsc -p tsconfig.build.json).
+# `api` e `web` consomem este dist, mas ele é gerado — quem clona roda o build.
+dist/
+
+# Cache incremental do TypeScript
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Variáveis de ambiente (o shared não usa, mas nunca por acidente)
+.env
+.env.*
+!.env.example
+
+# Saída de `npm pack`
+*.tgz
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
