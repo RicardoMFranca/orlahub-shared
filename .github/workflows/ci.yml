@@ -1,0 +1,36 @@
+# Verificação do contrato.
+#
+# Este repositório não faz deploy: ele é consumido por `api` e `web` via
+# dependência git. Mas é o mais perigoso dos três — uma mudança quebrada aqui
+# quebra os dois consumidores no próximo build deles, e o erro aparece longe
+# da causa.
+#
+# Por isso o build roda em toda mudança: o `dist/` é gerado no `prepare` de quem
+# instala, e se ele não compilar, o install do consumidor falha.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
