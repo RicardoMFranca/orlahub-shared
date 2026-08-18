@@ -12,6 +12,11 @@ pnpm typecheck  # tsc --noEmit
 pnpm lint
 ```
 
+O script **`prepare`** roda o mesmo build. Não é enfeite: `api` e `web` instalam
+este pacote por git, o `dist/` não está versionado, e é o `prepare` que o
+compila na máquina de quem instala. Sem ele, o pacote chega sem `dist/` e o
+`main` aponta para um arquivo inexistente.
+
 ## A regra de fronteira (a mais importante deste repo)
 
 **Entra:** o formato dos dados que cruzam HTTP/WS entre front e back.
@@ -45,16 +50,45 @@ src/
 
 ## Enums que devem existir (alinhados ao domínio)
 
-- `OrderStatus`: DRAFT, PENDING_ARRIVAL, QUEUED, CONFIRMED, PREPARING, READY, DELIVERED, CANCELLED
+- `OrderStatus`: DRAFT, PENDING_ARRIVAL, AWAITING_RELEASE, QUEUED, CONFIRMED, PREPARING, READY, DELIVERED, CLOSED, CANCELLED
+- `Station`: KITCHEN, BAR — o posto que prepara. É propriedade do PEDIDO (vem do item do cardápio), e também aparece no vínculo, dizendo de qual fila a pessoa cuida
 - `TabStatus`: OPEN, CLOSING, PAID
 - `PaymentStatus`: PENDING, PAID, EXPIRED, FAILED
 - `PaymentMethod`: PIX, CARD, CASH
 - `MembershipRole`: MANAGER, WAITER, COOK
+- `ThemePreset`: AREIA, MAR, COCO, POR_DO_SOL, CUSTOM — a identidade visual da loja
 - `UserRole` (global): ADMIN, COMPANY_OWNER
 
-## Versionamento
+`SessionResponse.memberships[]` carrega `role` **e** `station`: é de lá que o
+front decide quais áreas mostrar. `RestaurantResponse` carrega `logoUrl` e um
+`theme` já resolvido (o front não faz conta de cor).
 
-No começo, `api` e `web` consomem via referência git direta (`github:USER/quiosque-shared#main`). Uma mudança que quebra o contrato quebra os dois consumidores no typecheck — isso é desejado, é a proteção que este repo existe para dar. Quando amadurecer, migrar para GitHub Packages com semver.
+## Versionamento e consumo
+
+`api` e `web` consomem por **referência git direta**
+(`github:RicardoMFranca/orlahub-shared#main`). Uma mudança que quebra o contrato
+quebra os dois consumidores no typecheck seguinte — é desejado, é a proteção que
+este repo existe para dar. Quando amadurecer, migrar para GitHub Packages com
+semver.
+
+Três coisas que essa escolha exige, e que já custaram build quebrado:
+
+1. **O repositório precisa ser público** (ou haveria token em quatro ambientes de
+   build: dois Actions, o servidor e o Pages). Ele só tem contrato — sem segredo,
+   sem regra de negócio —, e os enums e schemas já viajam no bundle do front,
+   ao alcance de qualquer visitante. Fechá-lo não esconderia nada.
+2. **O consumidor precisa autorizar o `prepare`.** O pnpm bloqueia script de
+   pacote vindo de git; sem `"pnpm": { "onlyBuiltDependencies": ["@quiosque/shared"] }`
+   no `package.json` do consumidor, o install falha com
+   `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED`. Com npm passa direto — foi assim que
+   a diferença apareceu.
+3. **O `pnpm-lock.yaml` do consumidor precisa ser commitado junto.** O CI usa
+   `--frozen-lockfile`; lock desatualizado derruba o build com uma mensagem que
+   não aponta para a causa.
+
+Para trabalhar no contrato vendo o efeito na hora, o consumidor tem
+`pnpm shared:local` (aponta para `../orlahub-shared`) e `pnpm shared:git` (volta
+para a `main`). **O que se commita é sempre o `shared:git`.**
 
 ## O que NÃO fazer
 
