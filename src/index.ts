@@ -3,6 +3,7 @@ export * from './enums.js';
 export * from './events.js';
 export * from './dto/auth.js';
 export * from './dto/company.js';
+export * from './dto/platform.js';
 export * from './dto/menu.js';
 export * from './dto/tab.js';
 export * from './dto/order.js';

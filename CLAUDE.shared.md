@@ -32,6 +32,7 @@ src/
 ├── dto/
 │   ├── auth.ts     → LoginInput, SessionResponse
 │   ├── company.ts  → CompanyResponse, RestaurantResponse
+│   ├── platform.ts → CompanySummary, CompanyDetail, CompanyUser (o admin do sistema)
 │   ├── menu.ts     → MenuItemResponse, MenuResponse
 │   ├── tab.ts      → OpenTabInput, TabResponse
 │   ├── order.ts    → CreateOrderInput, OrderResponse, OrderItemResponse
@@ -58,6 +59,10 @@ src/
 - `MembershipRole`: MANAGER, WAITER, COOK
 - `ThemePreset`: AREIA, MAR, COCO, POR_DO_SOL, CUSTOM — a identidade visual da loja
 - `UserRole` (global): ADMIN, COMPANY_OWNER
+
+`dto/platform.ts` é o único DTO que atravessa EMPRESAS — o admin do sistema
+olhando o conjunto delas. Mora separado de `company.ts` de propósito: quem lê
+`CompanySummary` precisa saber que aquilo veio de uma leitura cross-tenant.
 
 `SessionResponse.memberships[]` carrega `role` **e** `station`: é de lá que o
 front decide quais áreas mostrar. `RestaurantResponse` carrega `logoUrl` e um
